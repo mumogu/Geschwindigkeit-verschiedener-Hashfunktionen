@@ -1,0 +1,9 @@
+Chunksize 1MB, 60 steps, Optimization O0: 
+real	0m41.423s
+user	0m40.635s
+sys	0m0.215s
+
+Chunksize 1MB, 60 steps, Optimization O2:
+real	0m41.164s
+user	0m40.631s
+sys	0m0.201s 
