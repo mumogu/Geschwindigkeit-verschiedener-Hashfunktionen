@@ -6,10 +6,10 @@
 TARGET	= hashspeed
 
 # Compiler
-CC		= g++47
+CC		= g++
 
 # Compiler Flags
-CFLAGS	= -std=c++11 -O2 -Wall -pedantic 
+CFLAGS	= -O2 -Wall -pedantic -Iinclude
 
 # Linker Flags
 LFLAGS	= -lcrypto

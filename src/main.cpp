@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+
 #include <openssl/sha.h>
 #include <openssl/md5.h>
 
@@ -45,11 +46,9 @@ int main(int argc, char * const argv[]) {
 		printf("Error opening results file. Aborting...");
 		exit(-1);
 	}
-	printf("step \t\tsize (MB)\t\tmd5 \t\tsha1 \t\tsha256 \t\tsha512\n");
-	fprintf(record, "step;size in mb;md5;sha1;sha256;sha512\n");
+	printf("step\tsize (MB)\tMD5\tSHA1\tSHA224\tSHA256\tSHA384\tSHA512\n");
+	fprintf(record, "step;size in mb;MD5;SHA1;SHA224;SHA256;SHA384;SHA512\n");
 	
-	
-
 	// Build the test data (i times the chunk from above)
 	unsigned char* test_data = (unsigned char *) malloc(steps * chunk_size);
 	for(int i=0; i<steps; i++) {
@@ -76,11 +75,23 @@ int main(int argc, char * const argv[]) {
 		end_c = clock();
 		int sha1_time = end_c - start_c;
 
+		// Measure SHA224
+		start_c = clock();
+		SHA224(test_data, i * chunk_size, sha_hash);
+		end_c = clock();
+		int sha224_time = end_c - start_c;
+
 		// Measure SHA256
 		start_c = clock();
 		SHA256(test_data, i * chunk_size, sha_hash);
 		end_c = clock();
 		int sha256_time = end_c - start_c;
+
+		// Measure SHA384
+		start_c = clock();
+		SHA384(test_data, i * chunk_size, sha_hash);
+		end_c = clock();
+		int sha384_time = end_c - start_c;
 
 		// Measure SHA512
 		start_c = clock();
@@ -88,8 +99,11 @@ int main(int argc, char * const argv[]) {
 		end_c = clock();
 		int sha512_time = end_c - start_c;
 		
-		printf("%d \t\t%d \t\t%d \t\t%d \t\t%d \t\t%d\n", i, i*chunk_size/1024/1024, md5_time, sha1_time, sha256_time, sha512_time);
-		fprintf(record, "%d;%d;%d;%d;%d;%d\n", i, i*chunk_size/1024/1024, md5_time, sha1_time, sha256_time, sha512_time);
+		printf("%d \t%d \t%d \t%d \t%d \t%d \t%d \t%d\n", 
+			i, i*chunk_size/1024/1024, md5_time, sha1_time, 
+			sha224_time, sha256_time, sha384_time, sha512_time);
+		fprintf(record, "%d;%d;%d;%d;%d;%d;%d;%d\n", i, i*chunk_size/1024/1024, md5_time, sha1_time, 
+			sha224_time, sha256_time, sha384_time, sha512_time);
 		fflush(record);
 
 		
