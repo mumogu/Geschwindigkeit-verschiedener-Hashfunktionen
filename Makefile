@@ -6,7 +6,7 @@
 TARGET	= hashspeed
 
 # Compiler
-CC		= g++
+CC		= gcc
 
 # Compiler Flags
 CFLAGS	= -O2 -Wall -pedantic -Iinclude

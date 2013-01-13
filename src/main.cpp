@@ -14,48 +14,72 @@ void usage() {
 	printf("Usage:\n");
 	printf("\thashspeed <filename> <steps> <chunksize in MB>\n\n");
 	printf("\tBenchmarks various different hashing algorithms and\n");
-	printf("\twirtes the times to a csv file.\n");
+	printf("\twirtes the results to a csv file.\n");
+}
+
+void fill_with_random_data(unsigned char* buffer, size_t length) {
+	FILE *devRand = fopen("/dev/urandom", "r");
+	if(devRand == NULL) {
+		printf("Error opening /dev/urandom. Aborting...");
+		exit(EXIT_FAILURE);
+	}
+		
+	size_t ret = fread(buffer, sizeof(unsigned char), length, devRand);
+	if(ret != length) {
+		printf("Error reading from /dev/urandom. Aborting...");
+		exit(EXIT_FAILURE);
+	}
+
+	fclose(devRand);
 }
 
 int main(int argc, char * const argv[]) {		
 	if(argc != 4) {
 		usage();
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 
 	int steps = atoi(argv[2]);
-	int chunk_size = atoi(argv[3]) * 1024 * 1024;
-
+	unsigned int chunk_size = atoi(argv[3]) * 1024 * 1024;
+	
 	// First, we need a chunk of random data
-	FILE *devRand = fopen("/dev/urandom", "r");
-	if(devRand == NULL) {
-		printf("Error reading from /dev/urandom. Aborting...");
-		exit(-1);
-	}
 	unsigned char* random_data = (unsigned char *) malloc(chunk_size);
 	if(random_data == NULL) {
 		printf("Error allocating buffer. Aborting...");
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
-	fread(random_data, sizeof(unsigned char), chunk_size, devRand);
-	fclose(devRand);
+	fill_with_random_data(random_data, chunk_size);
 
-	// Open the csv file for recording times
-	FILE *record = fopen(argv[1], "w");
-	if(record == NULL) {
-		printf("Error opening results file. Aborting...");
-		exit(-1);
-	}
-	printf("step\tsize (MB)\tMD5\tSHA1\tSHA224\tSHA256\tSHA384\tSHA512\n");
-	fprintf(record, "step;size in mb;MD5;SHA1;SHA224;SHA256;SHA384;SHA512\n");
-	
 	// Build the test data (i times the chunk from above)
 	unsigned char* test_data = (unsigned char *) malloc(steps * chunk_size);
+	if(test_data == NULL) {
+		printf("Error allocation test_data. Aborting...");
+		exit(EXIT_FAILURE);
+	}
+
 	for(int i=0; i<steps; i++) {
 		memcpy(test_data + i * chunk_size, random_data, chunk_size);	
 	}
+	
+	free(random_data);
 
+	// Open the csv file for recording runtimes
+	FILE *record = fopen(argv[1], "w");
+	if(record == NULL) {
+		printf("Error opening results file. Aborting...");
+		exit(EXIT_FAILURE);
+	}
+
+	printf("step\tsize (MB)\tMD5\tSHA1\tSHA224\tSHA256\tSHA384\tSHA512\n");
+	
+	size_t ret = fprintf(record, "step;size in mb;MD5;SHA1;SHA224;SHA256;SHA384;SHA512\n");
+	if(ret < 0) {
+		printf("Error writing results to file. Aborting...");
+		exit(EXIT_FAILURE);
+	}
+	
 	// Buffer for the hash function to write to. This is never read.
+	// 64Byte is the longest result expected from one of the hash funcitons.
 	unsigned char sha_hash[64];
 
 	// Initialize the timing
