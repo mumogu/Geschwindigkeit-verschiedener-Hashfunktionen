@@ -39,7 +39,7 @@ int main(int argc, char * const argv[]) {
 		exit(EXIT_SUCCESS);
 	}
 
-	int steps = atoi(argv[2]);
+	unsigned int steps = atoi(argv[2]);
 	unsigned int chunk_size = atoi(argv[3]) * 1024 * 1024;
 	
 	// First, we need a chunk of random data
@@ -57,10 +57,10 @@ int main(int argc, char * const argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	for(int i=0; i<steps; i++) {
+	for(unsigned int i=0; i<steps; i++) {
 		memcpy(test_data + i * chunk_size, random_data, chunk_size);	
 	}
-	
+
 	free(random_data);
 
 	// Open the csv file for recording runtimes
@@ -86,7 +86,7 @@ int main(int argc, char * const argv[]) {
 	clock_t start_c, end_c;
 
 	// The test loop
-	for(int i=1; i<=steps; i++){		
+	for(unsigned int i=1; i<=steps; i++){		
 		// Measure MD5
 		start_c = clock();
 		MD5(test_data, i * chunk_size, sha_hash);
